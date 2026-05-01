@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your AI Toolkit Match — by Himja Behl</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0A0A;
+  --card:#141414;
+  --accent:#E8C547;
+  --accent2:#FF6B6B;
+  --accent3:#6BFFB8;
+  --text:#F5F5F0;
+  --muted:#666;
+  --border:#222;
+}
+
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  padding:1.5rem;
+}
+
+/* Animated background */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(232,197,71,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(107,255,184,0.04) 0%, transparent 60%);
+  pointer-events:none;
+}
+
+.app{
+  width:100%;
+  max-width:420px;
+  position:relative;
+  z-index:1;
+}
+
+/* Header */
+.header{
+  text-align:center;
+  margin-bottom:2rem;
+}
+
+.brand{
+  font-family:'Syne',sans-serif;
+  font-size:11px;
+  letter-spacing:0.25em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+
+.title{
+  font-family:'Syne',sans-serif;
+  font-size:1.5rem;
+  font-weight:800;
+  line-height:1.2;
+  color:var(--text);
+}
+
+.title span{color:var(--accent)}
+
+/* Progress */
+.progress-wrap{
+  margin-bottom:1.5rem;
+}
+
+.progress-bar{
+  height:2px;
+  background:var(--border);
+  border-radius:2px;
+  overflow:hidden;
+  margin-bottom:6px;
+}
+
+.progress-fill{
+  height:100%;
+  background:var(--accent);
+  border-radius:2px;
+  transition:width 0.4s ease;
+}
+
+.progress-text{
+  font-size:11px;
+  color:var(--muted);
+  letter-spacing:0.08em;
+}
+
+/* Card */
+.card-container{
+  position:relative;
+  height:320px;
+  margin-bottom:1.5rem;
+}
+
+.card{
+  position:absolute;
+  inset:0;
+  background:var(--card);
+  border:0.5px solid var(--border);
+  border-radius:20px;
+  padding:2rem;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  cursor:grab;
+  user-select:none;
+  transition:transform 0.1s ease;
+  touch-action:none;
+}
+
+.card.dragging{cursor:grabbing}
+
+.card.swipe-left{
+  animation:swipeLeft 0.3s ease forwards;
+}
+
+.card.swipe-right{
+  animation:swipeRight 0.3s ease forwards;
+}
+
+@keyframes swipeLeft{
+  to{transform:translateX(-120%) rotate(-15deg);opacity:0}
+}
+@keyframes swipeRight{
+  to{transform:translateX(120%) rotate(15deg);opacity:0}
+}
+
+.card-emoji{
+  font-size:3rem;
+  margin-bottom:1rem;
+  line-height:1;
+}
+
+.card-q{
+  font-family:'Syne',sans-serif;
+  font-size:1.1rem;
+  font-weight:700;
+  line-height:1.4;
+  margin-bottom:0.5rem;
+  color:var(--text);
+}
+
+.card-sub{
+  font-size:13px;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+/* Swipe indicators */
+.indicator-left{
+  position:absolute;
+  left:16px;
+  top:50%;
+  transform:translateY(-50%);
+  background:var(--accent2);
+  color:white;
+  font-family:'Syne',sans-serif;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:0.1em;
+  padding:6px 12px;
+  border-radius:8px;
+  opacity:0;
+  transition:opacity 0.15s;
+  pointer-events:none;
+}
+
+.indicator-right{
+  position:absolute;
+  right:16px;
+  top:50%;
+  transform:translateY(-50%);
+  background:var(--accent3);
+  color:#0A0A0A;
+  font-family:'Syne',sans-serif;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:0.1em;
+  padding:6px 12px;
+  border-radius:8px;
+  opacity:0;
+  transition:opacity 0.15s;
+  pointer-events:none;
+}
+
+/* Choice labels */
+.choices{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:1.5rem;
+  padding:0 8px;
+}
+
+.choice{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
+  color:var(--muted);
+  letter-spacing:0.05em;
+}
+
+.choice-icon{
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+}
+
+.choice-icon.no{background:rgba(255,107,107,0.15);border:0.5px solid rgba(255,107,107,0.3)}
+.choice-icon.yes{background:rgba(107,255,184,0.15);border:0.5px solid rgba(107,255,184,0.3)}
+
+/* Buttons */
+.btn-row{
+  display:flex;
+  gap:12px;
+}
+
+.btn{
+  flex:1;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  font-family:'Syne',sans-serif;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:0.08em;
+  cursor:pointer;
+  transition:all 0.18s;
+}
+
+.btn-no{
+  background:rgba(255,107,107,0.1);
+  color:var(--accent2);
+  border:0.5px solid rgba(255,107,107,0.3);
+}
+
+.btn-no:hover{background:rgba(255,107,107,0.2)}
+
+.btn-yes{
+  background:rgba(107,255,184,0.1);
+  color:var(--accent3);
+  border:0.5px solid rgba(107,255,184,0.3);
+}
+
+.btn-yes:hover{background:rgba(107,255,184,0.2)}
+
+/* Result screen */
+.result{
+  display:none;
+  text-align:center;
+  animation:fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.result.show{display:block}
+
+.result-emoji{font-size:4rem;margin-bottom:1rem}
+
+.result-label{
+  font-size:11px;
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+
+.result-title{
+  font-family:'Syne',sans-serif;
+  font-size:1.8rem;
+  font-weight:800;
+  color:var(--accent);
+  margin-bottom:1rem;
+  line-height:1.2;
+}
+
+.result-desc{
+  font-size:14px;
+  color:var(--muted);
+  line-height:1.7;
+  margin-bottom:1.5rem;
+}
+
+.tools-grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:center;
+  margin-bottom:1.5rem;
+}
+
+.tool-chip{
+  padding:8px 16px;
+  border-radius:20px;
+  font-family:'Syne',sans-serif;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:0.05em;
+}
+
+.tool-chip.primary{
+  background:var(--accent);
+  color:var(--bg);
+}
+
+.tool-chip.secondary{
+  background:var(--border);
+  color:var(--text);
+  border:0.5px solid #333;
+}
+
+.share-text{
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:1rem;
+  letter-spacing:0.05em;
+}
+
+.btn-restart{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:0.5px solid var(--border);
+  background:transparent;
+  color:var(--muted);
+  font-family:'Syne',sans-serif;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:0.1em;
+  cursor:pointer;
+  transition:all 0.18s;
+}
+
+.btn-restart:hover{border-color:var(--accent);color:var(--accent)}
+
+.himja-tag{
+  margin-top:1.5rem;
+  font-size:11px;
+  color:var(--muted);
+  letter-spacing:0.1em;
+}
+
+.himja-tag span{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Quiz screen -->
+  <div id="quizScreen">
+    <div class="header">
+      <div class="brand">by Himja Behl · @himjabehl</div>
+      <div class="title">Find Your <span>AI Toolkit</span></div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+      <div class="progress-text" id="progressText">Question 1 of 7</div>
+    </div>
+
+    <div class="card-container">
+      <div class="card" id="card">
+        <div class="indicator-left" id="indLeft">NOPE</div>
+        <div class="indicator-right" id="indRight">YES!</div>
+        <div class="card-emoji" id="cardEmoji">🧠</div>
+        <div class="card-q" id="cardQ">Loading...</div>
+        <div class="card-sub" id="cardSub"></div>
+      </div>
+    </div>
+
+    <div class="choices">
+      <div class="choice">
+        <div class="choice-icon no">👈</div>
+        <span>Nope</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);letter-spacing:0.05em">Swipe or tap</div>
+      <div class="choice">
+        <span>Yes!</span>
+        <div class="choice-icon yes">👉</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-no" onclick="answer(false)">👈 Nope</button>
+      <button class="btn btn-yes" onclick="answer(true)">Yes! 👉</button>
+    </div>
+  </div>
+
+  <!-- Result screen -->
+  <div class="result" id="resultScreen">
+    <div class="result-emoji" id="resultEmoji"></div>
+    <div class="result-label">Your AI Toolkit Match</div>
+    <div class="result-title" id="resultTitle"></div>
+    <div class="result-desc" id="resultDesc"></div>
+    <div class="tools-grid" id="toolsGrid"></div>
+    <div class="share-text">Share your result 👇 tag @himjabehl</div>
+    <button class="btn-restart" onclick="restart()">↺ Take it again</button>
+    <div class="himja-tag">Built by <span>@himjabehl</span> · Stylist by day, coder by night</div>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  {
+    emoji: "✍️",
+    q: "You write content — captions, emails, posts — almost every day.",
+    sub: "Swipe right if yes, left if no",
+    key: "writer"
+  },
+  {
+    emoji: "🎨",
+    q: "You need to make visuals — social posts, decks, thumbnails — regularly.",
+    sub: "Images, graphics, design stuff",
+    key: "visual"
+  },
+  {
+    emoji: "🔍",
+    q: "You spend hours researching — market, competitors, topics, people.",
+    sub: "Deep research is part of your work",
+    key: "researcher"
+  },
+  {
+    emoji: "🏗️",
+    q: "You want to build something — an app, a tool, a website — with AI.",
+    sub: "No coding background needed",
+    key: "builder"
+  },
+  {
+    emoji: "📊",
+    q: "You deal with data — spreadsheets, reports, numbers, analysis.",
+    sub: "Making sense of messy information",
+    key: "analyst"
+  },
+  {
+    emoji: "🎙️",
+    q: "You make videos or audio content — reels, podcasts, voiceovers.",
+    sub: "Video/audio is your main medium",
+    key: "creator"
+  },
+  {
+    emoji: "⚡",
+    q: "You want to automate repetitive tasks — so you can focus on what matters.",
+    sub: "Less manual work, more thinking",
+    key: "automator"
+  }
+];
+
+const results = {
+  writer: {
+    emoji: "✍️",
+    title: "The Content Machine",
+    desc: "You create constantly and AI should amplify your voice — not replace it. Your stack should make writing faster while keeping it authentically you.",
+    tools: ["Claude", "ChatGPT", "Notion AI", "Hemingway"],
+    primary: "Claude"
+  },
+  visual: {
+    emoji: "🎨",
+    title: "The Visual Thinker",
+    desc: "You think in images. Your AI toolkit should turn ideas into stunning visuals fast — without needing a designer or a degree.",
+    tools: ["Canva AI", "Ideogram", "Adobe Firefly", "Gamma"],
+    primary: "Canva AI"
+  },
+  researcher: {
+    emoji: "🔍",
+    title: "The Deep Diver",
+    desc: "You need information — fast, accurate, and synthesized. Your stack should cut hours of research down to minutes.",
+    tools: ["Perplexity", "Claude", "NotebookLM", "Consensus"],
+    primary: "Perplexity"
+  },
+  builder: {
+    emoji: "🏗️",
+    title: "The AI Builder",
+    desc: "You have ideas and you want to ship them. No CS degree needed — your stack turns your vision into working products.",
+    tools: ["Claude", "Replit", "Cursor", "Make.com"],
+    primary: "Claude"
+  },
+  analyst: {
+    emoji: "📊",
+    title: "The Data Whisperer",
+    desc: "You live in spreadsheets and reports. Your AI toolkit should turn messy data into clear insights — automatically.",
+    tools: ["ChatGPT Code", "Julius AI", "Rows", "Notion AI"],
+    primary: "Julius AI"
+  },
+  creator: {
+    emoji: "🎙️",
+    title: "The Content Creator",
+    desc: "You're camera-first. Your stack should handle everything from script to caption to thumbnail — so you can focus on showing up.",
+    tools: ["CapCut AI", "ElevenLabs", "Descript", "Opus Clip"],
+    primary: "Descript"
+  },
+  automator: {
+    emoji: "⚡",
+    title: "The Efficiency Obsessive",
+    desc: "You hate doing the same thing twice. Your stack should run workflows in the background while you focus on high-leverage work.",
+    tools: ["Make.com", "Zapier", "Claude API", "n8n"],
+    primary: "Make.com"
+  },
+  default: {
+    emoji: "🚀",
+    title: "The All-Rounder",
+    desc: "You do a bit of everything — and that's your superpower. Start with one tool and let it multiply your output across everything you do.",
+    tools: ["Claude", "Notion AI", "Canva AI", "Make.com"],
+    primary: "Claude"
+  }
+};
+
+let current = 0;
+let scores = {};
+let startX = 0;
+let isDragging = false;
+let dragX = 0;
+
+function loadQuestion(){
+  if(current >= questions.length){
+    showResult();
+    return;
+  }
+  const q = questions[current];
+  document.getElementById('cardEmoji').textContent = q.emoji;
+  document.getElementById('cardQ').textContent = q.q;
+  document.getElementById('cardSub').textContent = q.sub;
+  document.getElementById('progressFill').style.width = ((current/questions.length)*100)+'%';
+  document.getElementById('progressText').textContent = `Question ${current+1} of ${questions.length}`;
+
+  const card = document.getElementById('card');
+  card.style.transform = '';
+  card.classList.remove('swipe-left','swipe-right','dragging');
+  document.getElementById('indLeft').style.opacity = '0';
+  document.getElementById('indRight').style.opacity = '0';
+}
+
+function answer(yes){
+  const q = questions[current];
+  if(yes) scores[q.key] = (scores[q.key]||0) + 1;
+
+  const card = document.getElementById('card');
+  card.classList.add(yes ? 'swipe-right' : 'swipe-left');
+
+  setTimeout(()=>{
+    current++;
+    loadQuestion();
+  }, 300);
+}
+
+function showResult(){
+  document.getElementById('quizScreen').style.display = 'none';
+  const resultScreen = document.getElementById('resultScreen');
+  resultScreen.classList.add('show');
+
+  // Find top score
+  let topKey = 'default';
+  let topScore = 0;
+  for(const [key, val] of Object.entries(scores)){
+    if(val > topScore){ topScore = val; topKey = key; }
+  }
+
+  const r = results[topKey] || results.default;
+  document.getElementById('resultEmoji').textContent = r.emoji;
+  document.getElementById('resultTitle').textContent = r.title;
+  document.getElementById('resultDesc').textContent = r.desc;
+
+  const grid = document.getElementById('toolsGrid');
+  grid.innerHTML = r.tools.map(t =>
+    `<span class="tool-chip ${t===r.primary?'primary':'secondary'}">${t}</span>`
+  ).join('');
+}
+
+function restart(){
+  current = 0;
+  scores = {};
+  document.getElementById('quizScreen').style.display = 'block';
+  document.getElementById('resultScreen').classList.remove('show');
+  loadQuestion();
+}
+
+// Touch/drag support
+const card = document.getElementById('card');
+
+card.addEventListener('mousedown', e => {
+  isDragging = true;
+  startX = e.clientX;
+  card.classList.add('dragging');
+});
+
+document.addEventListener('mousemove', e => {
+  if(!isDragging) return;
+  dragX = e.clientX - startX;
+  card.style.transform = `translateX(${dragX}px) rotate(${dragX*0.05}deg)`;
+  const threshold = 60;
+  document.getElementById('indLeft').style.opacity = dragX < -threshold ? '1' : '0';
+  document.getElementById('indRight').style.opacity = dragX > threshold ? '1' : '0';
+});
+
+document.addEventListener('mouseup', () => {
+  if(!isDragging) return;
+  isDragging = false;
+  card.classList.remove('dragging');
+  if(Math.abs(dragX) > 80){
+    answer(dragX > 0);
+  } else {
+    card.style.transform = '';
+    document.getElementById('indLeft').style.opacity = '0';
+    document.getElementById('indRight').style.opacity = '0';
+  }
+  dragX = 0;
+});
+
+card.addEventListener('touchstart', e => {
+  startX = e.touches[0].clientX;
+  isDragging = true;
+}, {passive:true});
+
+card.addEventListener('touchmove', e => {
+  if(!isDragging) return;
+  dragX = e.touches[0].clientX - startX;
+  card.style.transform = `translateX(${dragX}px) rotate(${dragX*0.05}deg)`;
+  const threshold = 60;
+  document.getElementById('indLeft').style.opacity = dragX < -threshold ? '1' : '0';
+  document.getElementById('indRight').style.opacity = dragX > threshold ? '1' : '0';
+}, {passive:true});
+
+card.addEventListener('touchend', () => {
+  isDragging = false;
+  if(Math.abs(dragX) > 80){
+    answer(dragX > 0);
+  } else {
+    card.style.transform = '';
+    document.getElementById('indLeft').style.opacity = '0';
+    document.getElementById('indRight').style.opacity = '0';
+  }
+  dragX = 0;
+});
+
+loadQuestion();
+</script>
+</body>
+</html>
